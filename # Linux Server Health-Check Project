@@ -1,0 +1,103 @@
+# Linux Server Health-Check Project
+
+## Scenario
+
+A Linux server continuously collects and processes data from external
+Internet sources.
+
+If the workload stops functioning, the underlying cause could exist
+at several layers.
+
+## Troubleshooting Model
+
+SYSTEM
+CPU → Memory → Disk → Processes
+
+NETWORK
+Interface → IP → Route → Gateway → Internet
+
+SERVICES
+DNS → Ports → Application/API
+
+EVIDENCE
+Logs → Packet Capture
+
+uptime
+free -h
+df -h
+ps aux
+ip -brief addr
+ip route
+ping -c 2 1.1.1.1
+dig example.com
+ss -tulpn
+journalctl
+
+scripts/network_health_check.sh
+
+#!/bin/bash
+
+echo "=========================="
+echo " NETWORK HEALTH CHECK"
+echo "=========================="
+
+echo
+echo "=== INTERFACES ==="
+ip -brief addr
+
+echo
+echo "=== ROUTING TABLE ==="
+ip route
+
+echo
+echo "=== DEFAULT GATEWAY ==="
+ip route | grep default
+
+echo
+echo "=== INTERNET CONNECTIVITY ==="
+ping -c 2 1.1.1.1
+
+echo
+echo "=== DNS ==="
+dig google.com
+
+echo
+echo "=== LISTENING PORTS ==="
+ss -tulpn
+
+APPLICATION CAN'T REACH WEBSITE
+            ↓
+       ping gateway
+          PASS
+            ↓
+      ping 1.1.1.1
+          PASS
+            ↓
+     dig google.com
+          FAIL
+            ↓
+Internet routing works.
+DNS resolution doesn't.
+            ↓
+Investigate resolver configuration
+            ↓
+Correct problem
+            ↓
+Retest
+
+troubleshooting/dns-troubleshooting.md
+Manual Linux Commands
+        ↓
+Bash Scripts
+        ↓
+Troubleshooting Scenarios
+        ↓
+Logging
+        ↓
+Multiple Linux VMs
+        ↓
+Ansible
+        ↓
+Python
+        ↓
+Monitoring
